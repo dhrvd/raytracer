@@ -39,7 +39,7 @@ impl Vec3 {
         }
     }
 
-    pub fn unit(&self) -> Self {
+    pub fn normalize(&self) -> Self {
         *self / self.length()
     }
 }
