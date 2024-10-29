@@ -1,9 +1,11 @@
 mod hittable;
 mod ray;
+mod utils;
 mod vec3;
 
 use crate::hittable::{HitRecord, Object, Sphere};
 use crate::ray::Ray;
+use crate::utils::Interval;
 use crate::vec3::Vec3;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
@@ -18,17 +20,12 @@ const IMAGE_HEIGHT: i32 = {
     }
 };
 
-pub fn world_hit(
-    ray: &Ray,
-    ray_tmin: f32,
-    ray_tmax: f32,
-    world: &Vec<Object>,
-) -> Option<HitRecord> {
+pub fn world_hit(ray: &Ray, ray_t: Interval, world: &Vec<Object>) -> Option<HitRecord> {
     let mut temp_rec = None;
-    let mut closest_so_far = ray_tmax;
+    let mut closest_so_far = ray_t.max;
 
     for object in world {
-        if let Some(rec) = object.hit(ray, ray_tmin, closest_so_far) {
+        if let Some(rec) = object.hit(ray, Interval::new(ray_t.min, closest_so_far)) {
             closest_so_far = rec.t;
             temp_rec = Some(rec);
         }
@@ -38,7 +35,7 @@ pub fn world_hit(
 }
 
 fn ray_color(ray: &Ray, world: &Vec<Object>) -> Vec3 {
-    if let Some(rec) = world_hit(ray, 0.0, f32::INFINITY, world) {
+    if let Some(rec) = world_hit(ray, Interval::new(0.0, f32::INFINITY), world) {
         return (rec.normal + 1.0) * 0.5;
     }
 
