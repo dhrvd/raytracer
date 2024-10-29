@@ -1,6 +1,6 @@
 use crate::hittable::{HitRecord, Object, World};
 use crate::ray::Ray;
-use crate::utils::Interval;
+use crate::utils::{random_float, sample_square, Interval};
 use crate::vec3::Vec3;
 
 pub struct Camera {
@@ -43,29 +43,38 @@ impl Camera {
         Self::new(Vec3::ZEROS, 1.0, aspect_ratio, image_width)
     }
 
-    pub fn render(&self, world: &World) {
+    pub fn render(&self, world: &World, samples_per_pixel: u32) {
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
+
+        const INTENSITY: Interval = Interval::new(0.000, 0.999);
 
         for j in 0..self.image_height {
             for i in 0..self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (self.pixel_delta_u * i as f32)
-                    + (self.pixel_delta_v * j as f32);
-                let ray_direction = pixel_center - self.center;
-                let ray = Ray::new(self.center, ray_direction);
-
-                let color = self.ray_color(&ray, &world);
+                let mut color = Vec3::ZEROS;
+                for _ in 0..samples_per_pixel {
+                    color += self.ray_color(&self.get_ray(i, j), world)
+                }
+                color /= samples_per_pixel as f32;
 
                 // translate the [0, 1] component values to the byte range [0, 255]
-                let rbyte = (255.999 * color.x) as i32;
-                let gbyte = (255.999 * color.y) as i32;
-                let bbyte = (255.999 * color.z) as i32;
+                let rbyte = (256.0 * INTENSITY.clamp(color.x)) as i32;
+                let gbyte = (256.0 * INTENSITY.clamp(color.y)) as i32;
+                let bbyte = (256.0 * INTENSITY.clamp(color.z)) as i32;
 
                 println!("{} {} {}", rbyte, gbyte, bbyte);
             }
         }
 
         eprintln!("Done!")
+    }
+
+    fn get_ray(&self, i: u32, j: u32) -> Ray {
+        let offset = sample_square();
+        let pixel_sample = self.pixel00_loc
+            + (self.pixel_delta_u * (offset.x + i as f32))
+            + (self.pixel_delta_v * (offset.y + j as f32));
+
+        Ray::new(self.center, pixel_sample - self.center)
     }
 
     fn world_hit(&self, ray: &Ray, ray_t: Interval, world: &World) -> Option<HitRecord> {

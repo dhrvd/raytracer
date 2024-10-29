@@ -18,5 +18,5 @@ fn main() {
     ];
 
     let camera = Camera::default(ASPECT_RATIO, IMAGE_WIDTH);
-    camera.render(&world);
+    camera.render(&world, 100);
 }
