@@ -2,6 +2,8 @@ use crate::ray::Ray;
 use crate::utils::Interval;
 use crate::vec3::Vec3;
 
+pub type World = Vec<Object>;
+
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
