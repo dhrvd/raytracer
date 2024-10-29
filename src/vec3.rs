@@ -1,5 +1,6 @@
-use std::ops::{Add, AddAssign, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
+#[derive(Clone, Copy)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -7,8 +8,15 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
+    pub const ZEROS: Self = Self::from_v(0.0);
+    pub const ONES: Self = Self::from_v(1.0);
+
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
+    }
+
+    pub const fn from_v(v: f32) -> Self {
+        Self { x: v, y: v, z: v }
     }
 
     pub const fn length_squared(&self) -> f32 {
@@ -19,16 +27,20 @@ impl Vec3 {
         self.length_squared().sqrt()
     }
 
-    pub fn dot(self, rhs: Self) -> f32 {
-        (self.x * rhs.x) * (self.y * rhs.y) * (self.z * rhs.z)
+    pub fn dot(&self, rhs: Self) -> f32 {
+        (self.x * rhs.x) + (self.y * rhs.y) + (self.z * rhs.z)
     }
 
-    pub fn cross(self, rhs: Self) -> Self {
+    pub fn cross(&self, rhs: Self) -> Self {
         Self {
             x: self.y * rhs.z - rhs.y * self.z,
             y: self.z * rhs.x - rhs.z * self.x,
             z: self.x * rhs.y - rhs.x * self.y,
         }
+    }
+
+    pub fn unit(&self) -> Self {
+        *self / self.length()
     }
 }
 
@@ -52,6 +64,18 @@ impl AddAssign<Vec3> for Vec3 {
     }
 }
 
+impl Div<f32> for Vec3 {
+    type Output = Self;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Self {
+            x: self.x.div(rhs),
+            y: self.y.div(rhs),
+            z: self.z.div(rhs),
+        }
+    }
+}
+
 impl Mul<Vec3> for Vec3 {
     type Output = Self;
 
@@ -60,6 +84,18 @@ impl Mul<Vec3> for Vec3 {
             x: self.x.mul(rhs.x),
             y: self.y.mul(rhs.y),
             z: self.z.mul(rhs.z),
+        }
+    }
+}
+
+impl Mul<f32> for Vec3 {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self {
+            x: self.x.mul(rhs),
+            y: self.y.mul(rhs),
+            z: self.z.mul(rhs),
         }
     }
 }
