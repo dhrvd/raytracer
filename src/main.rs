@@ -19,15 +19,15 @@ const IMAGE_HEIGHT: i32 = {
 fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> f32 {
     let oc = center - ray.origin;
     let a = ray.direction.length_squared();
-    let b = -2.0 * ray.direction.dot(oc);
+    let h = ray.direction.dot(oc);
     let c = oc.length_squared() - radius * radius;
 
-    let discriminant = b * b - 4.0 * a * c;
+    let discriminant = h * h - a * c;
 
     if discriminant < 0.0 {
         -1.0
     } else {
-        (-b - discriminant.sqrt()) / (2.0 * a)
+        (h - discriminant.sqrt()) / a
     }
 }
 
