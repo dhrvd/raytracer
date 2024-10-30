@@ -89,7 +89,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "raytracing"
+name = "raytracer"
 version = "0.1.0"
 dependencies = [
  "rand",
