@@ -1,5 +1,4 @@
 use crate::hittable::{Hittable, HittableList};
-use crate::utils::random_unit_vector;
 use crate::vec3::Vec3;
 
 pub struct Ray {
