@@ -46,6 +46,18 @@ fn main() {
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let vfov = 20.0 * f32::consts::PI / 180.0;
 
-    let camera = Camera::new(lookfrom, lookat, vup, vfov, ASPECT_RATIO, IMAGE_WIDTH);
+    let defocus_angle = 10.0 * f32::consts::PI / 180.0;
+    let focus_dist = 3.4;
+
+    let camera = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        defocus_angle,
+        focus_dist,
+        ASPECT_RATIO,
+        IMAGE_WIDTH,
+    );
     camera.render(&world, 100, 50);
 }

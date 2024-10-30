@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use crate::hittable::HittableList;
 use crate::ray::Ray;
-use crate::utils::{linear_to_gamma, sample_square};
+use crate::utils::{linear_to_gamma, random_in_unit_disk, sample_square};
 use crate::vec3::Vec3;
 
 pub struct Camera {
@@ -13,6 +13,9 @@ pub struct Camera {
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
     pixel00_loc: Vec3,
+    defocus_angle: f32,
+    defocus_disk_u: Vec3,
+    defocus_disk_v: Vec3,
 }
 
 impl Camera {
@@ -21,13 +24,14 @@ impl Camera {
         lookat: Vec3,
         vup: Vec3,
         vfov: f32,
+        defocus_angle: f32,
+        focus_dist: f32,
         aspect_ratio: f32,
         image_width: u32,
     ) -> Self {
         let image_height = (image_width as f32 / aspect_ratio).max(1.0) as u32;
 
-        let focal_length = (lookfrom - lookat).length();
-        let viewport_height = 2.0 * focal_length * (vfov / 2.0).tan();
+        let viewport_height = 2.0 * focus_dist * (vfov / 2.0).tan();
         let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 
         let w = (lookfrom - lookat).normalize();
@@ -40,9 +44,10 @@ impl Camera {
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
 
-        let viewport_upper_left =
-            lookfrom - (w * focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = lookfrom - (w * focus_dist) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
+
+        let defocus_radius = focus_dist * (defocus_angle / 2.0).tan();
 
         Self {
             center: lookfrom,
@@ -51,6 +56,9 @@ impl Camera {
             pixel_delta_u,
             pixel_delta_v,
             pixel00_loc,
+            defocus_angle,
+            defocus_disk_u: u * defocus_radius,
+            defocus_disk_v: v * defocus_radius,
         }
     }
 
@@ -89,6 +97,16 @@ impl Camera {
             + (self.pixel_delta_u * (offset.x + i as f32))
             + (self.pixel_delta_v * (offset.y + j as f32));
 
-        Ray::new(self.center, pixel_sample - self.center)
+        let origin = if self.defocus_angle <= 0.0 {
+            self.center
+        } else {
+            self.defocus_disk_sample()
+        };
+        Ray::new(origin, pixel_sample - origin)
+    }
+
+    fn defocus_disk_sample(&self) -> Vec3 {
+        let p = random_in_unit_disk();
+        self.center + (self.defocus_disk_u * p.x) + (self.defocus_disk_v * p.y)
     }
 }
