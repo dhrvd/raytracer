@@ -6,6 +6,7 @@ mod ray;
 mod utils;
 mod vec3;
 
+use core::f32;
 use std::sync::Arc;
 
 use crate::camera::Camera;
@@ -40,6 +41,11 @@ fn main() {
         Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, material_right)),
     ]);
 
-    let camera = Camera::default(ASPECT_RATIO, IMAGE_WIDTH);
+    let lookfrom = Vec3::new(-2.0, 2.0, 1.0);
+    let lookat = Vec3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 20.0 * f32::consts::PI / 180.0;
+
+    let camera = Camera::new(lookfrom, lookat, vup, vfov, ASPECT_RATIO, IMAGE_WIDTH);
     camera.render(&world, 100, 50);
 }

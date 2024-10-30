@@ -1,3 +1,4 @@
+use core::f32;
 use std::time::Instant;
 
 use crate::hittable::HittableList;
@@ -15,34 +16,42 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(center: Vec3, focal_length: f32, aspect_ratio: f32, image_width: u32) -> Self {
+    pub fn new(
+        lookfrom: Vec3,
+        lookat: Vec3,
+        vup: Vec3,
+        vfov: f32,
+        aspect_ratio: f32,
+        image_width: u32,
+    ) -> Self {
         let image_height = (image_width as f32 / aspect_ratio).max(1.0) as u32;
 
-        let viewport_height = 2.0;
+        let focal_length = (lookfrom - lookat).length();
+        let viewport_height = 2.0 * focal_length * (vfov / 2.0).tan();
         let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        let w = (lookfrom - lookat).normalize();
+        let u = vup.cross(w).normalize();
+        let v = w.cross(u);
+
+        let viewport_u = u * viewport_width;
+        let viewport_v = -v * viewport_height;
 
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
 
         let viewport_upper_left =
-            center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            lookfrom - (w * focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
 
         Self {
-            center,
+            center: lookfrom,
             image_width,
             image_height,
             pixel_delta_u,
             pixel_delta_v,
             pixel00_loc,
         }
-    }
-
-    pub fn default(aspect_ratio: f32, image_width: u32) -> Self {
-        Self::new(Vec3::ZEROS, 1.0, aspect_ratio, image_width)
     }
 
     pub fn render(&self, world: &HittableList, samples_per_pixel: u32, max_depth: u32) {
