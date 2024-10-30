@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use crate::hittable::{HitRecord, Object, World};
 use crate::ray::Ray;
-use crate::utils::{random_on_hemisphere, random_unit_vector, sample_square, Interval};
+use crate::utils::{linear_to_gamma, random_unit_vector, sample_square, Interval};
 use crate::vec3::Vec3;
 
 pub struct Camera {
@@ -65,9 +65,9 @@ impl Camera {
                 color /= samples_per_pixel as f32;
 
                 // translate the [0, 1] component values to the byte range [0, 255]
-                let rbyte = (256.0 * INTENSITY.clamp(color.x)) as i32;
-                let gbyte = (256.0 * INTENSITY.clamp(color.y)) as i32;
-                let bbyte = (256.0 * INTENSITY.clamp(color.z)) as i32;
+                let rbyte = (256.0 * INTENSITY.clamp(linear_to_gamma(color.x))) as i32;
+                let gbyte = (256.0 * INTENSITY.clamp(linear_to_gamma(color.y))) as i32;
+                let bbyte = (256.0 * INTENSITY.clamp(linear_to_gamma(color.z))) as i32;
 
                 println!("{} {} {}", rbyte, gbyte, bbyte);
             }
