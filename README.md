@@ -2,7 +2,7 @@ a simple raytracer (path tracer) written in rust
 
 ### usage
 ```bash
-cargo run >> image.ppm
+cargo run > image.ppm
 ```
 
 ### gallery
