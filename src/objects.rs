@@ -47,17 +47,14 @@ impl Hittable for Sphere {
         }
 
         let point = ray.at(root);
-        let mut normal = (point - self.center) / self.radius;
+        let outward_normal = (point - self.center) / self.radius;
 
-        if ray.direction.dot(normal) > 0.0 {
-            normal = -normal
-        };
-
-        Some(HitRecord {
-            t: root,
+        Some(HitRecord::new(
             point,
-            normal,
-            material: Arc::clone(&self.material),
-        })
+            outward_normal,
+            ray,
+            root,
+            Arc::clone(&self.material),
+        ))
     }
 }
