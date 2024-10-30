@@ -3,8 +3,33 @@ use std::time::Instant;
 
 use crate::hittable::HittableList;
 use crate::ray::Ray;
-use crate::utils::{linear_to_gamma, random_in_unit_disk, sample_square};
+use crate::utils::random_float;
 use crate::vec3::Vec3;
+
+fn sample_square() -> Vec3 {
+    Vec3::new(
+        random_float(0.0, 1.0) - 0.5,
+        random_float(0.0, 1.0) - 0.5,
+        0.0,
+    )
+}
+
+fn random_in_unit_disk() -> Vec3 {
+    loop {
+        let p = Vec3::new(random_float(-1.0, 1.0), random_float(-1.0, 1.0), 0.0);
+        if p.length_squared() < 1.0 {
+            return p;
+        }
+    }
+}
+
+fn linear_to_gamma(linear_component: f32) -> f32 {
+    if linear_component > 0.0 {
+        linear_component.sqrt()
+    } else {
+        0.0
+    }
+}
 
 pub struct Camera {
     center: Vec3,
