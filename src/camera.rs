@@ -1,6 +1,8 @@
+use std::time::Instant;
+
 use crate::hittable::{HitRecord, Object, World};
 use crate::ray::Ray;
-use crate::utils::{random_float, sample_square, Interval};
+use crate::utils::{random_on_hemisphere, random_unit_vector, sample_square, Interval};
 use crate::vec3::Vec3;
 
 pub struct Camera {
@@ -43,7 +45,13 @@ impl Camera {
         Self::new(Vec3::ZEROS, 1.0, aspect_ratio, image_width)
     }
 
-    pub fn render(&self, world: &World, samples_per_pixel: u32) {
+    pub fn render(&self, world: &World, samples_per_pixel: u32, max_depth: u32) {
+        eprintln!(
+            "Rendering {}x{} at {} samples per pixel with max depth {}",
+            self.image_width, self.image_height, samples_per_pixel, max_depth
+        );
+        let start = Instant::now();
+
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
 
         const INTENSITY: Interval = Interval::new(0.000, 0.999);
@@ -52,7 +60,7 @@ impl Camera {
             for i in 0..self.image_width {
                 let mut color = Vec3::ZEROS;
                 for _ in 0..samples_per_pixel {
-                    color += self.ray_color(&self.get_ray(i, j), world)
+                    color += self.ray_color(&self.get_ray(i, j), max_depth, world)
                 }
                 color /= samples_per_pixel as f32;
 
@@ -65,7 +73,7 @@ impl Camera {
             }
         }
 
-        eprintln!("Done!")
+        eprintln!("Done! {:?}", start.elapsed());
     }
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
@@ -91,9 +99,14 @@ impl Camera {
         temp_rec
     }
 
-    fn ray_color(&self, ray: &Ray, world: &Vec<Object>) -> Vec3 {
-        if let Some(rec) = self.world_hit(ray, Interval::new(0.0, f32::INFINITY), world) {
-            return (rec.normal + 1.0) * 0.5;
+    fn ray_color(&self, ray: &Ray, depth: u32, world: &Vec<Object>) -> Vec3 {
+        if depth == 0 {
+            return Vec3::ZEROS;
+        }
+
+        if let Some(rec) = self.world_hit(ray, Interval::new(0.001, f32::INFINITY), world) {
+            let direction = rec.normal + random_unit_vector();
+            return self.ray_color(&Ray::new(rec.point, direction), depth - 1, world) * 0.5;
         }
 
         let unit_direction = ray.direction.normalize();
