@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
@@ -35,4 +38,5 @@ pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f32,
+    pub material: Arc<dyn Material>,
 }
