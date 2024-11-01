@@ -1,5 +1,9 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Neg, Sub};
 
+pub const fn vec3(x: f32, y: f32, z: f32) -> Vec3 {
+    Vec3::new(x, y, z)
+}
+
 #[derive(Clone, Copy)]
 pub struct Vec3 {
     pub x: f32,

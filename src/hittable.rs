@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use crate::material::Material;
-use crate::ray::Ray;
-use crate::vec3::Vec3;
-
+use crate::math::{Ray, Vec3};
 pub trait Hittable {
     fn hit(&self, ray: &Ray, ray_tmin: f32, ray_tmax: f32) -> Option<HitRecord>;
 }

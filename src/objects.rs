@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
-use crate::ray::Ray;
-use crate::vec3::Vec3;
+use crate::math::{Ray, Vec3};
 
 pub struct Sphere {
     center: Vec3,

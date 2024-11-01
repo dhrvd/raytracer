@@ -1,7 +1,5 @@
 use crate::hittable::HitRecord;
-use crate::ray::Ray;
-use crate::utils::{random_float, random_unit_vector};
-use crate::vec3::Vec3;
+use crate::math::{random, random_unit_vector, Ray, Vec3};
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)>;
@@ -80,7 +78,7 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let direction = {
-            if ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > random_float(0.0, 1.0) {
+            if ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > random() {
                 reflect(unit_direction, rec.normal)
             } else {
                 refract(unit_direction, rec.normal, ri)

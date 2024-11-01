@@ -1,12 +1,10 @@
-a simple raytracer (path tracer) written in rust
+a simple raytracer written in rust, based on [Raytracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
 ### usage
 ```bash
-cargo run > image.ppm
+cargo run --release
 ```
 
 ### gallery
 ![image](./gallery/image.png)
 
-### reference
-- [raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
