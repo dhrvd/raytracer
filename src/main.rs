@@ -9,15 +9,15 @@ use std::sync::Arc;
 
 use crate::camera::Camera;
 use crate::hittable::HittableList;
-use crate::material::{Dielectric, Lambertian, Material, Metal};
+use crate::material::{Dielectric, Lambertian, Metal};
 use crate::math::{degrees_to_radians, random, random_rng, random_vec3, vec3, Vec3};
 use crate::objects::Sphere;
 
-const IMAGE_WIDTH: u32 = 1200;
+const IMAGE_WIDTH: u32 = 400;
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
 
-const SAMPLES_PER_PIXEL: u32 = 500;
+const SAMPLES_PER_PIXEL: u32 = 100;
 const MAX_DEPTH: u32 = 50;
 
 fn main() {
@@ -36,21 +36,22 @@ fn main() {
             let center = vec3(a as f32 + 0.9 * random(), 0.2, b as f32 + 0.9 * random());
 
             if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
-                let material: Arc<dyn Material> = {
-                    if choose_mat < 0.8 {
-                        let albedo = random_vec3(0.0, 1.0) * random_vec3(0.0, 1.0);
-                        Arc::new(Lambertian::new(albedo))
-                    } else if choose_mat < 0.95 {
-                        let albedo = random_vec3(0.5, 1.0);
-                        let fuzz = random_rng(0.0, 0.5);
+                if choose_mat < 0.8 {
+                    let albedo = random_vec3(0.0, 1.0) * random_vec3(0.0, 1.0);
+                    let material = Arc::new(Lambertian::new(albedo));
 
-                        Arc::new(Metal::new(albedo, fuzz))
-                    } else {
-                        Arc::new(Dielectric::new(1.5))
-                    }
-                };
+                    let center2 = center + vec3(0.0, random_rng(0.0, 0.5), 0.0);
+                    world.add(Box::new(Sphere::moving(center, center2, 0.2, material)));
+                } else if choose_mat < 0.95 {
+                    let albedo = random_vec3(0.5, 1.0);
+                    let fuzz = random_rng(0.0, 0.5);
 
-                world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    let material = Arc::new(Metal::new(albedo, fuzz));
+                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                } else {
+                    let material = Arc::new(Dielectric::new(1.5));
+                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                }
             }
         }
     }

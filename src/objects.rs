@@ -5,7 +5,7 @@ use crate::material::Material;
 use crate::math::{Ray, Vec3};
 
 pub struct Sphere {
-    center: Vec3,
+    center: Ray,
     radius: f32,
     material: Arc<dyn Material>,
 }
@@ -13,7 +13,15 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
         Self {
-            center,
+            center: Ray::new(center, Vec3::ZEROS, 0.0),
+            radius,
+            material,
+        }
+    }
+
+    pub fn moving(center1: Vec3, center2: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
+        Self {
+            center: Ray::new(center1, center2 - center1, 0.0),
             radius,
             material,
         }
@@ -22,7 +30,8 @@ impl Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_tmin: f32, ray_tmax: f32) -> Option<HitRecord> {
-        let oc = self.center - ray.origin;
+        let current_center = self.center.at(ray.time);
+        let oc = current_center - ray.origin;
 
         let a = ray.direction.length_squared();
         let h = ray.direction.dot(oc);
@@ -46,7 +55,7 @@ impl Hittable for Sphere {
         }
 
         let point = ray.at(root);
-        let outward_normal = (point - self.center) / self.radius;
+        let outward_normal = (point - current_center) / self.radius;
 
         Some(HitRecord::new(
             point,
