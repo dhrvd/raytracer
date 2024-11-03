@@ -31,8 +31,17 @@ impl Aabb {
         )
     }
 
-    pub fn join_mut(&mut self, other: &Self) {
-        *self = self.join(other)
+    pub fn longest_axis(&self) -> usize {
+        [
+            self.max.x - self.min.x,
+            self.max.y - self.min.y,
+            self.max.z - self.min.z,
+        ]
+        .iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+        .map(|(index, _)| index)
+        .unwrap_or(0)
     }
 
     pub fn hit(&self, ray: &Ray, mut ray_tmin: f32, mut ray_tmax: f32) -> bool {

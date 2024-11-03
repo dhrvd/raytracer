@@ -1,5 +1,3 @@
-use rand::Rng;
-
 use crate::{
     aabb::Aabb,
     hittable::{HitRecord, Hittable},
@@ -29,7 +27,11 @@ impl BVHNode {
                 BVHNode::Node { left, right, aabb }
             }
             _ => {
-                let axis = rand::thread_rng().gen_range(0..3);
+                let aabb = hittables
+                    .iter()
+                    .fold(Aabb::EMPTY, |acc, h| acc.join(&h.aabb()));
+                let axis = aabb.longest_axis();
+
                 hittables
                     .sort_by(|a, b| a.aabb().min[axis].partial_cmp(&b.aabb().min[axis]).unwrap());
 
@@ -37,7 +39,6 @@ impl BVHNode {
 
                 let left = BVHNode::new(hittables);
                 let right = BVHNode::new(&mut right_hittables);
-                let aabb = left.aabb().join(&right.aabb());
 
                 BVHNode::Node {
                     left: Box::new(left),
