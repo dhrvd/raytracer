@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::math::{Ray, Vec3};
@@ -64,5 +65,18 @@ impl Hittable for Sphere {
             root,
             Arc::clone(&self.material),
         ))
+    }
+
+    fn aabb(&self) -> Aabb {
+        let box1 = Aabb::new(
+            self.center.at(0.0) - self.radius,
+            self.center.at(0.0) + self.radius,
+        );
+        let box2 = Aabb::new(
+            self.center.at(1.0) - self.radius,
+            self.center.at(1.0) + self.radius,
+        );
+
+        box1.join(&box2)
     }
 }

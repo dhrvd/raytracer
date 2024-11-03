@@ -1,22 +1,31 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::material::Material;
 use crate::math::{Ray, Vec3};
+
 pub trait Hittable {
     fn hit(&self, ray: &Ray, ray_tmin: f32, ray_tmax: f32) -> Option<HitRecord>;
+    fn aabb(&self) -> Aabb;
 }
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    pub hittables: Vec<Box<dyn Hittable>>,
+    aabb: Aabb,
 }
 
 impl HittableList {
-    pub fn new(objects: Vec<Box<dyn Hittable>>) -> Self {
-        HittableList { objects }
+    pub fn new(hittables: Vec<Box<dyn Hittable>>) -> Self {
+        let aabb = hittables
+            .iter()
+            .fold(Aabb::EMPTY, |aabb, h| aabb.join(&h.aabb()));
+
+        HittableList { hittables, aabb }
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
-        self.objects.push(object);
+    pub fn add(&mut self, hittable: Box<dyn Hittable>) {
+        self.aabb.join_mut(&hittable.aabb());
+        self.hittables.push(hittable);
     }
 }
 
@@ -25,14 +34,18 @@ impl Hittable for HittableList {
         let mut temp_rec = None;
         let mut closest_so_far = ray_tmax;
 
-        for object in &self.objects {
-            if let Some(rec) = object.hit(ray, ray_tmin, closest_so_far) {
+        for hittable in &self.hittables {
+            if let Some(rec) = hittable.hit(ray, ray_tmin, closest_so_far) {
                 closest_so_far = rec.t;
                 temp_rec = Some(rec);
             }
         }
 
         temp_rec
+    }
+
+    fn aabb(&self) -> Aabb {
+        self.aabb
     }
 }
 

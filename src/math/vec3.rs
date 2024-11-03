@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, Mul, Neg, Sub};
 
 pub const fn vec3(x: f32, y: f32, z: f32) -> Vec3 {
     Vec3::new(x, y, z)
@@ -100,6 +100,19 @@ impl DivAssign<f32> for Vec3 {
     }
 }
 
+impl Index<usize> for Vec3 {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!("index out of bounds!"),
+        }
+    }
+}
+
 impl Mul<Vec3> for Vec3 {
     type Output = Self;
 
@@ -144,6 +157,18 @@ impl Sub<Vec3> for Vec3 {
             x: self.x.sub(rhs.x),
             y: self.y.sub(rhs.y),
             z: self.z.sub(rhs.z),
+        }
+    }
+}
+
+impl Sub<f32> for Vec3 {
+    type Output = Self;
+
+    fn sub(self, rhs: f32) -> Self::Output {
+        Self {
+            x: self.x.sub(rhs),
+            y: self.y.sub(rhs),
+            z: self.z.sub(rhs),
         }
     }
 }

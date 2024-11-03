@@ -1,3 +1,5 @@
+mod aabb;
+mod bvh;
 mod camera;
 mod hittable;
 mod material;
@@ -7,8 +9,9 @@ mod render;
 
 use std::sync::Arc;
 
+use crate::bvh::BVHNode;
 use crate::camera::Camera;
-use crate::hittable::HittableList;
+use crate::hittable::Hittable;
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::math::{degrees_to_radians, random, random_rng, random_vec3, vec3, Vec3};
 use crate::objects::Sphere;
@@ -21,10 +24,10 @@ const SAMPLES_PER_PIXEL: u32 = 100;
 const MAX_DEPTH: u32 = 50;
 
 fn main() {
-    let mut world = HittableList::new(Vec::new());
+    let mut world: Vec<Box<dyn Hittable>> = Vec::new();
 
     let material_ground = Arc::new(Lambertian::new(vec3(0.5, 0.5, 0.5)));
-    world.add(Box::new(Sphere::new(
+    world.push(Box::new(Sphere::new(
         vec3(0.0, -1000.0, 0.0),
         1000.0,
         material_ground,
@@ -41,29 +44,31 @@ fn main() {
                     let material = Arc::new(Lambertian::new(albedo));
 
                     let center2 = center + vec3(0.0, random_rng(0.0, 0.5), 0.0);
-                    world.add(Box::new(Sphere::moving(center, center2, 0.2, material)));
+                    world.push(Box::new(Sphere::moving(center, center2, 0.2, material)));
                 } else if choose_mat < 0.95 {
                     let albedo = random_vec3(0.5, 1.0);
                     let fuzz = random_rng(0.0, 0.5);
 
                     let material = Arc::new(Metal::new(albedo, fuzz));
-                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    world.push(Box::new(Sphere::new(center, 0.2, material)));
                 } else {
                     let material = Arc::new(Dielectric::new(1.5));
-                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    world.push(Box::new(Sphere::new(center, 0.2, material)));
                 }
             }
         }
     }
 
     let material1 = Arc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(vec3(0.0, 1.0, 0.0), 1.0, material1)));
+    world.push(Box::new(Sphere::new(vec3(0.0, 1.0, 0.0), 1.0, material1)));
 
     let material2 = Arc::new(Lambertian::new(vec3(0.4, 0.2, 0.1)));
-    world.add(Box::new(Sphere::new(vec3(-4.0, 1.0, 0.0), 1.0, material2)));
+    world.push(Box::new(Sphere::new(vec3(-4.0, 1.0, 0.0), 1.0, material2)));
 
     let material3 = Arc::new(Metal::new(vec3(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Sphere::new(vec3(4.0, 1.0, 0.0), 1.0, material3)));
+    world.push(Box::new(Sphere::new(vec3(4.0, 1.0, 0.0), 1.0, material3)));
+
+    let bvh_world = BVHNode::new(&mut world);
 
     let camera = Camera::new(
         vec3(13.0, 2.0, 3.0),
@@ -77,7 +82,7 @@ fn main() {
 
     render::render(
         camera,
-        world,
+        bvh_world,
         (IMAGE_WIDTH, IMAGE_HEIGHT),
         SAMPLES_PER_PIXEL,
         MAX_DEPTH,
