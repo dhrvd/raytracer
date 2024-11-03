@@ -1,17 +1,30 @@
 use crate::hittable::HitRecord;
 use crate::math::{random, random_unit_vector, Ray, Vec3};
+use crate::texture::{Checkered, Solid, Texture};
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)>;
 }
 
 pub struct Lambertian {
-    albedo: Vec3,
+    texture: Box<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
-        Self { albedo }
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        Self { texture }
+    }
+
+    pub fn solid(albedo: Vec3) -> Self {
+        Self::new(Box::new(Solid::new(albedo)))
+    }
+
+    pub fn checkered(scale: f32, even_albedo: Vec3, odd_albedo: Vec3) -> Self {
+        Self::new(Box::new(Checkered::new(
+            scale,
+            Box::new(Solid::new(even_albedo)),
+            Box::new(Solid::new(odd_albedo)),
+        )))
     }
 }
 
@@ -25,7 +38,7 @@ impl Material for Lambertian {
         }
 
         Some((
-            self.albedo,
+            self.texture.value(rec.uv, &rec.point),
             Ray::new(rec.point, scatter_direction, r_in.time),
         ))
     }

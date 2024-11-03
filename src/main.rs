@@ -6,6 +6,7 @@ mod material;
 mod math;
 mod objects;
 mod render;
+mod texture;
 
 use std::sync::Arc;
 
@@ -26,7 +27,11 @@ const MAX_DEPTH: u32 = 50;
 fn main() {
     let mut world: Vec<Box<dyn Hittable>> = Vec::new();
 
-    let material_ground = Arc::new(Lambertian::new(vec3(0.5, 0.5, 0.5)));
+    let material_ground = Arc::new(Lambertian::checkered(
+        0.32,
+        vec3(0.2, 0.3, 0.1),
+        vec3(0.9, 0.9, 0.9),
+    ));
     world.push(Box::new(Sphere::new(
         vec3(0.0, -1000.0, 0.0),
         1000.0,
@@ -41,7 +46,7 @@ fn main() {
             if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
                     let albedo = random_vec3(0.0, 1.0) * random_vec3(0.0, 1.0);
-                    let material = Arc::new(Lambertian::new(albedo));
+                    let material = Arc::new(Lambertian::solid(albedo));
 
                     let center2 = center + vec3(0.0, random_rng(0.0, 0.5), 0.0);
                     world.push(Box::new(Sphere::moving(center, center2, 0.2, material)));
@@ -62,7 +67,7 @@ fn main() {
     let material1 = Arc::new(Dielectric::new(1.5));
     world.push(Box::new(Sphere::new(vec3(0.0, 1.0, 0.0), 1.0, material1)));
 
-    let material2 = Arc::new(Lambertian::new(vec3(0.4, 0.2, 0.1)));
+    let material2 = Arc::new(Lambertian::solid(vec3(0.4, 0.2, 0.1)));
     world.push(Box::new(Sphere::new(vec3(-4.0, 1.0, 0.0), 1.0, material2)));
 
     let material3 = Arc::new(Metal::new(vec3(0.7, 0.6, 0.5), 0.0));
