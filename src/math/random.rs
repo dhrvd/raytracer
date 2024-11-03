@@ -1,6 +1,6 @@
 use rand::{thread_rng, Rng};
 
-use crate::vec3::{vec3, Vec3};
+use crate::math::{vec3, Vec3};
 
 pub fn random_rng(min: f32, max: f32) -> f32 {
     let mut rng = thread_rng();

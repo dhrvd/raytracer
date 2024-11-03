@@ -31,6 +31,10 @@ impl Aabb {
         )
     }
 
+    pub fn join_mut(&mut self, other: &Self) {
+        *self = self.join(other)
+    }
+
     pub fn longest_axis(&self) -> usize {
         [
             self.max.x - self.min.x,

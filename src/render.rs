@@ -1,12 +1,11 @@
 use console::Style;
 use indicatif::{ProgressBar, ProgressStyle};
 
-use crate::bvh::BVHNode;
 use crate::camera::Camera;
 use crate::hittable::Hittable;
 use crate::math::{linear_to_gamma, vec3, Ray, Vec3, INFINITY};
 
-fn ray_color(ray: &Ray, world: &BVHNode, depth: u32) -> Vec3 {
+fn ray_color<H: Hittable>(ray: &Ray, world: &H, depth: u32) -> Vec3 {
     if depth == 0 {
         return Vec3::ZEROS;
     }
@@ -25,9 +24,9 @@ fn ray_color(ray: &Ray, world: &BVHNode, depth: u32) -> Vec3 {
     Vec3::ONES * (1.0 - a) + vec3(0.5, 0.7, 1.0) * a
 }
 
-pub fn render(
+pub fn render<H: Hittable>(
     camera: Camera,
-    world: BVHNode,
+    world: H,
     size: (u32, u32),
     samples_per_pixel: u32,
     max_depth: u32,
